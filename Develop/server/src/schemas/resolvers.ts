@@ -1,25 +1,22 @@
-import Profile from '../../models/profile';
-import Book from '../../models/Book';
-import { signToken } from '../../services/auth';
+import User from '../models/User.js';
+// import bookSchema from '../models/Book';
+import { signToken } from '../services/auth.js';
 
-interface IProfile {
-    _id: string;
-    username: string;
-    email: string;
-    bookCount: number;
-    savedBooks: Book[];
-}
+// interface Book {
+//     bookId: string;
+//     authors: string[];
+//     description: string;
+//     title: string;
+//     image: string;
+//     link: string;
+// }
 
-interface IAuth {
-    token: string;
-    profile: IProfile;
-}
 
 const resolvers = {
     Query: {
         profile: async (_parent: any, _args: any, context: any) => {
             if (context.user) {
-                const profile = await Profile.findOne({ _id: context.user._id });
+                const profile = await User.findOne({ _id: context.user._id });
                 return profile;
             }
             throw new Error('Not logged in');
@@ -27,7 +24,7 @@ const resolvers = {
     },
     Mutation: {
         login: async (_: any, { email, password }: any) => {
-            const profile = await Profile.findOne({ email });
+            const profile = await User.findOne({ email });
             if (!profile) {
                 throw new Error('No profile with this email found!');
             }
@@ -39,7 +36,7 @@ const resolvers = {
             return { token, profile };
         },
         addUser: async (_: any, { username, email, password }: any) => {
-            const profile = await Profile.create({ username, email, password });
+            const profile = await User.create({ username, email, password });
             if (!profile) {
                 throw new Error('Something went wrong!');
             }
@@ -48,7 +45,7 @@ const resolvers = {
         },
         saveBook: async (_: any, { bookId, authors, description, title, image, link }: any, context: any) => {
             if (context.user) {
-                const updatedProfile = await Profile.findOneAndUpdate(
+                const updatedProfile = await User.findOneAndUpdate(
                     { _id: context.user._id },
                     { $addToSet: { savedBooks: { bookId, authors, description, title, image, link } } },
                     { new: true, runValidators: true }
@@ -59,7 +56,7 @@ const resolvers = {
         },
         deleteBook: async (_parent: any, { bookId }: any, context: any) => {
             if (context.user) {
-                const updatedProfile = await Profile.findOneAndUpdate(
+                const updatedProfile = await User.findOneAndUpdate(
                     { _id: context.user._id },
                     { $pull: { savedBooks: { bookId } } },
                     { new: true }
