@@ -3,13 +3,18 @@ import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 
-import { loginUser } from '../utils/API';
+// import { loginUser } from '../utils/API';
 import Auth from '../utils/auth';
 import type { User } from '../models/User';
+import { LOGIN_USER } from '../utils/mutations';
+import { useMutation } from '@apollo/client';
+import auth from '../utils/auth';
 
 // biome-ignore lint/correctness/noEmptyPattern: <explanation>
 const LoginForm = ({}: { handleModalClose: () => void }) => {
-  const [userFormData, setUserFormData] = useState<User>({ username: '', email: '', password: '', savedBooks: [] });
+  const [userFormData, setUserFormData] = useState<User>({ username: '', email: '', password: ''
+    , savedBooks: [] });
+  const [login] = useMutation(LOGIN_USER);
   const [validated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
 
@@ -17,6 +22,7 @@ const LoginForm = ({}: { handleModalClose: () => void }) => {
     const { name, value } = event.target;
     setUserFormData({ ...userFormData, [name]: value });
   };
+
 
   const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -29,14 +35,13 @@ const LoginForm = ({}: { handleModalClose: () => void }) => {
     }
 
     try {
-      const response = await loginUser(userFormData);
+      const { data } = await login({
+        variables: { ...userFormData },
+      });
+      auth.login(data.login.token);
+      Auth.login(data.login.token);
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const { token } = await response.json();
-      Auth.login(token);
+      // const response = await loginUser(userFormData);
     } catch (err) {
       console.error(err);
       setShowAlert(true);
