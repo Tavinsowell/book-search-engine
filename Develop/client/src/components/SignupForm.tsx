@@ -17,7 +17,8 @@ const SignupForm = ({}: { handleModalClose: () => void }) => {
  
   const [userFormData, setUserFormData] = useState({ username: '',
      email: '', 
-     password: '' });
+     password: '',
+     savedBooks: [] });
   const [ addUser, {error, data} ] = useMutation(ADD_USER)
   ;
  

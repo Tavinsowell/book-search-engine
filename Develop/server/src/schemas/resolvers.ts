@@ -1,15 +1,18 @@
 import User from '../models/User.js';
+
 // import bookSchema from '../models/Book';
 import { signToken } from '../services/auth.js';
 
-// interface Book {
-//     bookId: string;
-//     authors: string[];
-//     description: string;
-//     title: string;
-//     image: string;
-//     link: string;
-// }
+interface BookArg {
+    input:{
+    bookId: string;
+    authors: string[];
+    description: string;
+    title: string;
+    image: string;
+    link: string;
+    }
+}
 interface AddUserArgs {
 
       username: string;
@@ -50,16 +53,18 @@ const resolvers = {
             const token = signToken(profile.email, profile.password, profile._id);
             return { token, profile };
         },
-        saveBook: async (_: any, { bookId, authors, description, title, image, link }: any, context: any) => {
+        saveBook: async (_: any, { input }: BookArg, context: any) => {
+        
+            console.log(context.user);
             if (context.user) {
                 const updatedProfile = await User.findOneAndUpdate(
                     { _id: context.user._id },
-                    { $addToSet: { savedBooks: { bookId, authors, description, title, image, link } } },
+                    { $addToSet: { savedBooks: { ...input } } },
                     { new: true, runValidators: true }
                 );
                 return updatedProfile;
             }
-            throw new Error('You need to be logged in!');
+            throw new Error(context.user);
         },
         deleteBook: async (_parent: any, { bookId }: any, context: any) => {
             if (context.user) {
