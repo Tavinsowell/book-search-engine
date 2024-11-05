@@ -1,16 +1,24 @@
 // use this to decode a token and get the user's information out of it
 import { jwtDecode } from 'jwt-decode';
+import { JwtPayload } from 'jsonwebtoken';
 
 interface UserToken {
   name: string;
   exp: number;
 }
+interface ExtendedJwt extends JwtPayload {
+  data:{
+    username:string,
+    email:string,
+    id:string
+  }
+};
 
 // create a new class to instantiate for a user
 class AuthService {
   // get user data
   getProfile() {
-    return jwtDecode(this.getToken() || '');
+    return jwtDecode<ExtendedJwt>(this.getToken() || '');
   }
 
   // check if user's logged in
