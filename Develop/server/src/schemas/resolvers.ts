@@ -20,6 +20,11 @@ interface AddUserArgs {
       password: string;
 
   }
+  interface RemoveBookArgs {
+    bookId: string;
+  }
+
+
 const resolvers = {
     Query: {
         user: async (_parent: any, _args: any, context: any) => {
@@ -67,19 +72,19 @@ const resolvers = {
             }
       throw new AuthenticationError('You must be logged in to save a book');
     },
-        deleteBook: async (_parent: any, { bookId }: any, context: any) => {
-            if (context.user) {
-                const updatedUser = await User.findOneAndUpdate(
-                    { _id: context.user._id },
-                    { $pull: { savedBooks: { bookId } } },
-                    { new: true }
-                );
-                return updatedUser;
-            }
-            throw new Error('You need to be logged in!');
+    removeBook: async (_parent: any, { bookId }: RemoveBookArgs, context: any ) => {
+        if (context.user) {
+          return User.findByIdAndUpdate(
+            { _id: context.user._id },
+            { $pull: { savedBooks: { bookId: bookId } } },
+            { new: true }
+          );
         }
-    }
+        throw new AuthenticationError('You must be logged in to remove a book');
+        },
+    },
 };
+
 export default resolvers;
 
 
